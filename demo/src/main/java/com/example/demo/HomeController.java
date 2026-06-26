@@ -24,5 +24,9 @@ public class HomeController {
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Long id) { repo.deleteById(id); return "redirect:/"; }
 
-    // We will handle Edit in the next step
+    @GetMapping("/edit/{id}")
+    public String editForm(@PathVariable Long id, Model model) {
+        model.addAttribute("employee", repo.findById(id).orElseThrow());
+        return "edit-employee"; // This looks for a file named edit-employee.html
+    }
 }
