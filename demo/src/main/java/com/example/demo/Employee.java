@@ -1,5 +1,4 @@
 package com.example.demo;
-
 import jakarta.persistence.*;
 import java.util.*;
 
@@ -8,7 +7,7 @@ public class Employee {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String role;
+    private String role; // "MANAGER" or "NORMAL"
     private int maxHours = 40;
 
     @ElementCollection
