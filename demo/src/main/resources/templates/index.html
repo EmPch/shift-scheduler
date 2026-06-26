@@ -1,61 +1,180 @@
-<!-- Master Roster -->
-<div class="card shadow-sm p-4 mb-4">
-    <h4 class="mb-3">Master Roster</h4>
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-        <tr><th>Name</th><th>Role</th><th>This week</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-        <tr th:each="emp, s : ${roster}">
-            <td th:text="${emp.name}" class="fw-bold"></td>
-            <td><span th:classappend="${emp.role == 'MANAGER'} ? 'badge bg-danger' : 'badge bg-secondary'"
-                      th:text="${emp.role}"></span></td>
-            <td>
-                <span th:if="${!notInPool.contains(emp)}" class="badge bg-success">In schedule</span>
-                <span th:if="${notInPool.contains(emp)}" class="text-muted small">Not added</span>
-            </td>
-            <td>
-                <a th:href="@{/add-to-schedule/{i}(i=${s.index})}"
-                   class="btn btn-sm btn-primary me-1">
-                    <span th:text="${notInPool.contains(emp)} ? 'Add to schedule' : 'Edit availability'"></span>
-                </a>
-                <a th:href="@{/delete-employee/{i}(i=${s.index})}"
-                   class="btn btn-sm btn-outline-danger">Delete</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Team Shift Scheduler</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { border: none; border-radius: 12px; }
+        .main-container { max-width: 1200px; margin: auto; }
+        .header-bg { background: linear-gradient(135deg, #0d6efd, #0dcaf0); color: white; padding: 2rem; border-radius: 0 0 20px 20px; }
+    </style>
+</head>
+<body>
+
+<div class="header-bg shadow-sm text-center mb-5">
+    <h1>Team Shift Scheduler</h1>
+    <p>Manage your weekly roster with ease</p>
 </div>
 
-<!-- This week's schedule pool -->
-<div class="card shadow-sm p-4 mb-4" th:if="${not #lists.isEmpty(schedulePool)}">
-    <h4 class="mb-3">This week's pool</h4>
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-        <tr><th>Name</th><th>Role</th><th>Max hrs</th><th>Shifts available</th><th></th></tr>
-        </thead>
-        <tbody>
-        <tr th:each="entry, s : ${schedulePool}">
-            <td th:text="${entry.name}" class="fw-bold"></td>
-            <td><span th:classappend="${entry.role == 'MANAGER'} ? 'badge bg-danger' : 'badge bg-secondary'"
-                      th:text="${entry.role}"></span></td>
-            <td th:text="${entry.maxHours}"></td>
-            <td><span th:text="${#lists.size(entry.availability)}"></span> shifts</td>
-            <td>
-                <a th:href="@{/remove-from-schedule/{i}(i=${s.index})}"
-                   class="btn btn-sm btn-outline-danger">Remove</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<div class="container-fluid main-container">
+    <div class="row g-4">
 
-    <form th:action="@{/generate}" method="post" class="row align-items-end g-3 mt-1">
-        <div class="col-md-8">
-            <label class="form-label fw-bold">Staff needed per shift</label>
-            <input type="number" name="staffNeeded" class="form-control" value="2" min="1" max="10">
+        <!-- Add Employee Form -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm p-4 mb-4">
+                <h4 class="text-primary mb-3">Add to Roster</h4>
+                <form th:action="@{/add-employee}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select name="role" class="form-select">
+                            <option value="NORMAL">Normal Staff</option>
+                            <option value="MANAGER">Manager</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Add to Roster</button>
+                </form>
+            </div>
+
+            <div class="card p-3 shadow-sm bg-light">
+                <form th:action="@{/reset-all}" method="post">
+                    <button type="submit" class="btn btn-outline-danger w-100">Reset All Data</button>
+                </form>
+            </div>
         </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-success w-100">Generate schedule</button>
+
+        <!-- Master Roster -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm p-4 mb-4">
+                <h4 class="mb-3">Master Roster</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>This week</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="emp, s : ${roster}">
+                            <td th:text="${emp.name}" class="fw-bold"></td>
+                            <td>
+                                <span th:classappend="${emp.role == 'MANAGER'} ? 'badge bg-danger' : 'badge bg-secondary'"
+                                      th:text="${emp.role}"></span>
+                            </td>
+                            <td>
+                                <span th:if="${!notInPool.contains(emp)}" class="badge bg-success">In schedule</span>
+                                <span th:if="${notInPool.contains(emp)}" class="text-muted small">Not added</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/add-to-schedule/{i}(i=${s.index})}"
+                                   class="btn btn-sm btn-primary me-1"
+                                   th:text="${notInPool.contains(emp)} ? 'Add to schedule' : 'Edit availability'">
+                                </a>
+                                <a th:href="@{/delete-employee/{i}(i=${s.index})}"
+                                   class="btn btn-sm btn-outline-danger">Delete</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(roster)}">
+                            <td colspan="4" class="text-center text-muted">No employees yet. Add someone to get started.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- This week's schedule pool -->
+            <div class="card shadow-sm p-4 mb-4" th:if="${not #lists.isEmpty(schedulePool)}">
+                <h4 class="mb-3">This Week's Pool</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Max hrs</th>
+                            <th>Shifts available</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="entry, s : ${schedulePool}">
+                            <td th:text="${entry.name}" class="fw-bold"></td>
+                            <td>
+                                <span th:classappend="${entry.role == 'MANAGER'} ? 'badge bg-danger' : 'badge bg-secondary'"
+                                      th:text="${entry.role}"></span>
+                            </td>
+                            <td th:text="${entry.maxHours}"></td>
+                            <td>
+                                <span th:text="${#lists.size(entry.availability)}"></span> shifts
+                            </td>
+                            <td>
+                                <a th:href="@{/remove-from-schedule/{i}(i=${s.index})}"
+                                   class="btn btn-sm btn-outline-danger">Remove</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr>
+
+                <form th:action="@{/generate}" method="post" class="row align-items-end g-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Staff needed per shift</label>
+                        <input type="number" name="staffNeeded" class="form-control" value="2" min="1" max="10" required>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-success w-100">Generate Schedule</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </form>
+    </div>
+
+    <!-- Alerts and generated schedule -->
+    <div class="mt-4 mb-5">
+        <div th:if="${not #lists.isEmpty(unassigned)}" class="alert alert-warning shadow-sm">
+            <strong>Alert:</strong> The following employees were not assigned any shifts:
+            <ul class="mb-0">
+                <li th:each="u : ${unassigned}" th:text="${u.name}"></li>
+            </ul>
+        </div>
+
+        <div class="card shadow p-4" th:if="${not #lists.isEmpty(schedule)}">
+            <h3 class="text-success border-bottom pb-2">Weekly Schedule</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Shift</th>
+                        <th>Manager</th>
+                        <th>Staff</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="assignment : ${schedule}">
+                        <td class="fw-bold" th:text="${assignment.shiftName}"></td>
+                        <td class="text-danger fw-bold"
+                            th:text="${assignment.manager != null} ? ${assignment.manager.name} : 'No Manager'"></td>
+                        <td>
+                            <span th:each="staff : ${assignment.normalStaff}"
+                                  class="badge bg-secondary me-1"
+                                  th:text="${staff.name}"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+</body>
+</html>
