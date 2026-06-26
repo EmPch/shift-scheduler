@@ -78,4 +78,28 @@ public class HomeController {
         }
         return "redirect:/";
     }
+
+    // New: Show Edit Form
+    @GetMapping("/edit-employee/{index}")
+    public String editEmployeeForm(@PathVariable int index, Model model) {
+        model.addAttribute("employee", employees.get(index));
+        model.addAttribute("index", index);
+        model.addAttribute("definedShifts", definedShifts);
+        return "edit-employee"; // This will be a new file
+    }
+
+    // New: Save Edited Data
+    @PostMapping("/edit-employee/{index}")
+    public String saveEdit(@PathVariable int index,
+                           @RequestParam String name,
+                           @RequestParam String role,
+                           @RequestParam int maxHours,
+                           @RequestParam(required = false) List<String> availability) {
+        Employee emp = employees.get(index);
+        emp.setName(name);
+        emp.setRole(role);
+        emp.setMaxHours(maxHours);
+        emp.setAvailability(availability == null ? new ArrayList<>() : availability);
+        return "redirect:/";
+    }
 }

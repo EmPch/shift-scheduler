@@ -76,6 +76,7 @@
                             <td><span th:classappend="${emp.role == 'MANAGER'} ? 'badge bg-danger' : 'badge bg-secondary'" th:text="${emp.role}"></span></td>
                             <td th:text="${emp.maxHours}"></td>
                             <td>
+                                <a th:href="@{/edit-employee/{index}(index=${empStat.index})}" class="btn btn-sm btn-warning me-1">Edit</a>
                                 <a th:href="@{/delete-employee/{index}(index=${empStat.index})}" class="btn btn-sm btn-danger">Delete</a>
                             </td>
                         </tr>

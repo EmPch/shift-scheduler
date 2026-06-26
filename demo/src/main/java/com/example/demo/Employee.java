@@ -19,6 +19,11 @@ public class Employee {
         this.availability = availability != null ? availability : new ArrayList<>();
     }
 
+    public void setName(String name) { this.name = name; }
+    public void setRole(String role) { this.role = role; }
+    public void setMaxHours(int maxHours) { this.maxHours = maxHours; }
+    public void setAvailability(List<String> availability) { this.availability = availability; }
+
     public String getName() { return name; }
     public String getRole() { return role; }
     public int getMaxHours() { return maxHours; }
