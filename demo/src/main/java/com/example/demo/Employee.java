@@ -1,27 +1,24 @@
 package com.example.demo;
-import jakarta.persistence.*;
-import java.util.*;
 
-@Entity
+import java.util.ArrayList;
+import java.util.List;
+
 public class Employee {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     private String name;
     private String role; // "MANAGER" or "NORMAL"
-    private int maxHours = 40;
+    private int maxHours;
+    private List<String> availability = new ArrayList<>();
 
-    @ElementCollection
-    private Set<String> favorites = new HashSet<>();
+    public Employee(String name, String role, int maxHours, List<String> availability) {
+        this.name = name;
+        this.role = role;
+        this.maxHours = maxHours;
+        this.availability = availability;
+    }
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // Getters
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
     public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
     public int getMaxHours() { return maxHours; }
-    public void setMaxHours(int maxHours) { this.maxHours = maxHours; }
-    public Set<String> getFavorites() { return favorites; }
-    public void setFavorites(Set<String> favorites) { this.favorites = favorites; }
+    public List<String> getAvailability() { return availability; }
 }
