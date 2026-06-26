@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 @Controller
 public class HomeController {
 
-    private final List<Employee> roster = new ArrayList<>();
-    private final List<ScheduleEntry> schedulePool = new ArrayList<>();
+    private final EmployeeRepository employeeRepo;
+    private final ScheduleEntryRepository scheduleEntryRepo;
     private final List<ShiftAssignment> generatedSchedule = new ArrayList<>();
 
     private final List<String> definedShifts = Arrays.asList(
@@ -20,74 +20,81 @@ public class HomeController {
             "Sun Morning", "Sun Evening"
     );
 
+    public HomeController(EmployeeRepository employeeRepo, ScheduleEntryRepository scheduleEntryRepo) {
+        this.employeeRepo = employeeRepo;
+        this.scheduleEntryRepo = scheduleEntryRepo;
+    }
+
     @GetMapping("/")
     public String homePage(Model model) {
-        model.addAttribute("roster", roster);
-        model.addAttribute("schedulePool", schedulePool);
-        model.addAttribute("definedShifts", definedShifts);
-        model.addAttribute("schedule", generatedSchedule);
+        List<Employee> roster = employeeRepo.findAll();
+        List<ScheduleEntry> schedulePool = scheduleEntryRepo.findAll();
 
         List<ScheduleEntry> unassigned = schedulePool.stream()
                 .filter(e -> e.getAssignedHours() == 0)
                 .collect(Collectors.toList());
-        model.addAttribute("unassigned", unassigned);
 
-        // Employees not yet added to this week's pool
         List<Employee> notInPool = roster.stream()
                 .filter(e -> schedulePool.stream()
-                        .noneMatch(se -> se.getEmployee() == e))
+                        .noneMatch(se -> se.getEmployee().getId().equals(e.getId())))
                 .collect(Collectors.toList());
+
+        model.addAttribute("roster", roster);
+        model.addAttribute("schedulePool", schedulePool);
+        model.addAttribute("definedShifts", definedShifts);
+        model.addAttribute("schedule", generatedSchedule);
+        model.addAttribute("unassigned", unassigned);
         model.addAttribute("notInPool", notInPool);
 
         return "index";
     }
 
-    // Add to master roster (name + role only)
     @PostMapping("/add-employee")
     public String addEmployee(@RequestParam String name, @RequestParam String role) {
-        roster.add(new Employee(name, role));
+        employeeRepo.save(new Employee(name, role));
         return "redirect:/";
     }
 
-    @GetMapping("/delete-employee/{index}")
-    public String deleteEmployee(@PathVariable int index) {
-        Employee emp = roster.get(index);
-        schedulePool.removeIf(se -> se.getEmployee() == emp);
-        roster.remove(index);
+    @GetMapping("/delete-employee/{id}")
+    public String deleteEmployee(@PathVariable Long id) {
+        scheduleEntryRepo.findAll().stream()
+                .filter(se -> se.getEmployee().getId().equals(id))
+                .forEach(scheduleEntryRepo::delete);
+        employeeRepo.deleteById(id);
         return "redirect:/";
     }
 
-    // Show form to set this week's availability for an employee
-    @GetMapping("/add-to-schedule/{index}")
-    public String addToScheduleForm(@PathVariable int index, Model model) {
-        model.addAttribute("employee", roster.get(index));
-        model.addAttribute("rosterIndex", index);
+    @GetMapping("/add-to-schedule/{id}")
+    public String addToScheduleForm(@PathVariable Long id, Model model) {
+        model.addAttribute("employee", employeeRepo.findById(id).orElseThrow());
+        model.addAttribute("employeeId", id);
         model.addAttribute("definedShifts", definedShifts);
         return "add-to-schedule";
     }
 
-    // Save availability and add to schedule pool
-    @PostMapping("/add-to-schedule/{index}")
-    public String saveToSchedule(@PathVariable int index,
+    @PostMapping("/add-to-schedule/{id}")
+    public String saveToSchedule(@PathVariable Long id,
                                  @RequestParam int maxHours,
                                  @RequestParam(required = false) List<String> availability) {
-        Employee emp = roster.get(index);
-        // Remove any existing entry for this employee (re-adding replaces it)
-        schedulePool.removeIf(se -> se.getEmployee() == emp);
-        schedulePool.add(new ScheduleEntry(emp, maxHours,
+        Employee emp = employeeRepo.findById(id).orElseThrow();
+        scheduleEntryRepo.findAll().stream()
+                .filter(se -> se.getEmployee().getId().equals(id))
+                .forEach(scheduleEntryRepo::delete);
+        scheduleEntryRepo.save(new ScheduleEntry(emp, maxHours,
                 availability == null ? new ArrayList<>() : availability));
         return "redirect:/";
     }
 
-    @GetMapping("/remove-from-schedule/{index}")
-    public String removeFromSchedule(@PathVariable int index) {
-        schedulePool.remove(index);
+    @GetMapping("/remove-from-schedule/{id}")
+    public String removeFromSchedule(@PathVariable Long id) {
+        scheduleEntryRepo.deleteById(id);
         return "redirect:/";
     }
 
     @PostMapping("/generate")
     public String generateSchedule(@RequestParam int staffNeeded) {
         generatedSchedule.clear();
+        List<ScheduleEntry> schedulePool = scheduleEntryRepo.findAll();
         schedulePool.forEach(e -> e.setAssignedHours(0));
 
         for (String shift : definedShifts) {
@@ -115,8 +122,8 @@ public class HomeController {
 
     @PostMapping("/reset-all")
     public String resetAll() {
-        roster.clear();
-        schedulePool.clear();
+        scheduleEntryRepo.deleteAll();
+        employeeRepo.deleteAll();
         generatedSchedule.clear();
         return "redirect:/";
     }

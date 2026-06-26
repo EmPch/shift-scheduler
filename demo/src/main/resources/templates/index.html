@@ -62,7 +62,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="emp, s : ${roster}">
+                        <tr th:each="emp : ${roster}">
                             <td th:text="${emp.name}" class="fw-bold"></td>
                             <td>
                                 <span th:classappend="${emp.role == 'MANAGER'} ? 'badge bg-danger' : 'badge bg-secondary'"
@@ -73,11 +73,11 @@
                                 <span th:if="${notInPool.contains(emp)}" class="text-muted small">Not added</span>
                             </td>
                             <td>
-                                <a th:href="@{/add-to-schedule/{i}(i=${s.index})}"
+                                <a th:href="@{/add-to-schedule/{i}(i=${emp.id})}"
                                    class="btn btn-sm btn-primary me-1"
                                    th:text="${notInPool.contains(emp)} ? 'Add to schedule' : 'Edit availability'">
                                 </a>
-                                <a th:href="@{/delete-employee/{i}(i=${s.index})}"
+                                <a th:href="@{/delete-employee/{i}(i=${emp.id})}"
                                    class="btn btn-sm btn-outline-danger">Delete</a>
                             </td>
                         </tr>
@@ -104,7 +104,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="entry, s : ${schedulePool}">
+                        <tr th:each="entry : ${schedulePool}">
                             <td th:text="${entry.name}" class="fw-bold"></td>
                             <td>
                                 <span th:classappend="${entry.role == 'MANAGER'} ? 'badge bg-danger' : 'badge bg-secondary'"
@@ -115,7 +115,7 @@
                                 <span th:text="${#lists.size(entry.availability)}"></span> shifts
                             </td>
                             <td>
-                                <a th:href="@{/remove-from-schedule/{i}(i=${s.index})}"
+                                <a th:href="@{/remove-from-schedule/{i}(i=${entry.id})}"
                                    class="btn btn-sm btn-outline-danger">Remove</a>
                             </td>
                         </tr>
