@@ -14,7 +14,6 @@
 
 <div class="header-bg shadow-sm text-center mb-5">
     <h1>Team Shift Scheduler</h1>
-    <p>Manage your weekly roster with ease</p>
 </div>
 
 <div class="container-fluid main-container">
@@ -47,10 +46,10 @@
             </div>
         </div>
 
-        <!-- Master Roster -->
+        <!-- Roster -->
         <div class="col-lg-8">
             <div class="card shadow-sm p-4 mb-4">
-                <h4 class="mb-3">Master Roster</h4>
+                <h4 class="mb-3">Roster</h4>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
@@ -91,7 +90,7 @@
 
             <!-- This week's schedule pool -->
             <div class="card shadow-sm p-4 mb-4" th:if="${not #lists.isEmpty(schedulePool)}">
-                <h4 class="mb-3">This Week's Pool</h4>
+                <h4 class="mb-3">This Week's Roster</h4>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
